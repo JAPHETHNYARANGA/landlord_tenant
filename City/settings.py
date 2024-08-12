@@ -33,6 +33,12 @@ INSTALLED_APPS = [
     'City',
     'rest_framework',
     'corsheaders',
+    'bookings',
+    'chat',
+    'maintenance',
+    'payments',
+    'properties',
+    'users'
 
 ]
 
@@ -75,12 +81,15 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': config('DB_NAME'),
-        'USER':config('DB_USER'),
-        'PASSWORD':config('DB_PASSWORD'),
-        'HOST':'localhost',
-        'PORT':'5432'
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': 'localhost',
+        'PORT': '5433',
     }
 }
+
+
+
 
 
 # Password validation
