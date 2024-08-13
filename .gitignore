@@ -20,7 +20,6 @@ media
 # Django migrations
 **/migrations/
 
-
 # PyCharm
 .idea/
 
@@ -31,6 +30,5 @@ media
 .DS_Store
 
 # Virtual Environment
-enviroment/
 enviroment/
 *.enviroment
