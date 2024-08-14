@@ -14,7 +14,7 @@ class  RentPayment(models.Model):
 
    payment_id =  models.AutoField(primary_key=True)
    tenant_id = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='rent_payments')
-   property_id  =  models.ForeignKey('properties.Property', on_delete=models.CASCADE)
+   property_id  =  models.ForeignKey('properties.Property', on_delete=models.CASCADE)  #relationship btn property and payment
    amount  = models.DecimalField(max_digits=10, decimal_places=2)
    payment_date  = models.DateTimeField(auto_now_add=True)
    payment_method  = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
