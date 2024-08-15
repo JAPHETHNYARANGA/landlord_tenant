@@ -12,6 +12,7 @@ class Booking(models.Model):
         ('Pending','Pending'),
         ('Confirmed','Confirmed'),
         ('Cancelled','Cancelled'),
+        
         ('Completed', 'Complted'),
     ]
 
