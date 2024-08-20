@@ -73,7 +73,55 @@ def list_admins(request):
    #serializing the admins data
    serializer = AdminSerializer(admins, many=True)
    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+#updating admins 
+@api_view(['PUT'])
+def update_admins(request, admin_id):
+    try:
+        # Check if the admin exists
+        admin = Admin.objects.get(pk=admin_id)
+    except Admin.DoesNotExist:
+        return Response({'error': 'Admin not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    # Capture the current data
+    current_data = AdminSerializer(admin).data
+
+    # Initialize serializer with existing admin and new data from request
+    serializer = AdminSerializer(admin, data=request.data, partial=True)
+
+    if serializer.is_valid():
+        # Check if the new email is already used by another admin
+        email = serializer.validated_data.get('email', admin.email)
+        if Admin.objects.exclude(pk=admin_id).filter(email=email).exists():
+            return Response({'error': 'Admin with this email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Save the updated data
+        serializer.save()
+
+        # Return current data before update and updated data
+        response_data = {
+            'current_data': current_data,
+            'updated_data': serializer.data
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
    
+#deleting admin 
+@api_view(['DELETE'])
+def  delete_admin(request, admin_id):
+   try :
+       #Retrieving  the admin to be deleted
+       admin  = Admin.objects.get(pk=admin_id)
+   except Admin.DoesNotExist:
+      return Response({'error':'Admin not found.'}, status=status.HTTP_404_NOT_FOUND)
+   #Deleting  the admin
+  
+   admin.delete()
+  
+   return Response({'message':'Admin deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
 
 
 
@@ -112,30 +160,36 @@ def create_tenant(request):
 
 
 @api_view(['PUT'])
-def update_tenant(request,tenant_id):
-   try:
-     #checks if the  tenant exists
-      tenant  = Tenant.objects.get(pk=tenant_id)
-   except Tenant.DoesNotExist:
-      return Response({'error':'Tenant not found'}, status=status.HTTP_404_NOT_FOUND)
+def update_tenant(request, tenant_id):
+    try:
+        # Check if the tenant exists
+        tenant = Tenant.objects.get(pk=tenant_id)
+    except Tenant.DoesNotExist:
+        return Response({'error': 'Tenant not found'}, status=status.HTTP_404_NOT_FOUND)
 
+    # Capture the current data
+    current_data = TenantSerializer(tenant).data
 
-   #initialises serializer  with existing tenant and  new data from request
-   serializer  =  TenantSerializer(tenant, data=request.data, partial=True)
+    # Initialize serializer with existing tenant and new data from request
+    serializer = TenantSerializer(tenant, data=request.data, partial=True)
 
+    if serializer.is_valid():
+        # Check if the new email is already used by another tenant
+        email = serializer.validated_data.get('email', tenant.email)
+        if Tenant.objects.exclude(pk=tenant_id).filter(email=email).exists():
+            return Response({'error': 'Tenant with this email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
 
-   if serializer.is_valid():
-   #checks if the  new email is alread used  by another tenant
-       email = serializer.validated_data.get('email', tenant.email)
-       if Tenant.objects.exclude(pk=tenant_id).filter(email=email).exists():
-           return Response({'error':'Tenant with this email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
-      
+        # Save the updated data
+        serializer.save()
 
+        # Return current data before update and updated data
+        response_data = {
+            'current_data': current_data,
+            'updated_data': serializer.data
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
 
-       #saving the  updated data
-       serializer.save()
-       return Response(serializer.data, status=status.HTTP_200_OK)
-   return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
