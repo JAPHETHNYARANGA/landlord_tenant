@@ -1,3 +1,4 @@
+import logging
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -8,64 +9,49 @@ from django.conf import settings
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+logger = logging.getLogger(__name__)
 
 @api_view(['POST'])
 def create_admin(request):
+    name = request.data.get('name')
+    email = request.data.get('email')
 
+    # Log the request data
+    logger.debug(f'Request data: {request.data}')
 
+    # Check if an admin with the same name or email already exists
+    if Admin.objects.filter(name=name).exists():
+        logger.warning(f'Admin with name {name} already exists.')
+        return Response({'message': 'Admin with this name already exists.'}, status=status.HTTP_400_BAD_REQUEST)
 
+    if Admin.objects.filter(email=email).exists():
+        logger.warning(f'Admin with email {email} already exists.')
+        return Response({'message': 'Admin with this email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
 
- 
-  name =  request.data.get('name')
-  email  = request.data.get('email')
-
-
-
-
-  #checks if the an admin  with same username or email already exists
-  if  Admin.objects.filter(name=name).exists():
-     return Response({'message':'Admin with this name already exists.'})
- 
-  if  Admin.objects.filter(email=email).exists():
-     return Response({'message': 'Admin with this email alreadry exists.'})
-  #proceed with creation if no conflicts
-  if request.method  == 'POST':
-      serializer = AdminSerializer(data=request.data)
-      if serializer.is_valid():
-       serializer.save()
-      send_invite_email(serializer.data['email'])
-      return Response(serializer.data, status=status.HTTP_201_CREATED)
-  return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
+    # Proceed with creation if no conflicts
+    if request.method == 'POST':
+        serializer = AdminSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            send_invite_email(serializer.data['email'])
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        logger.error(f'Serializer errors: {serializer.errors}')
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 def send_invite_email(email):
-  subject = 'Welcome to Our Platform'
-  message = (
-      'Hello,\n\n'
-      'You have been added to our platform as an admin. '
-      'Please log in to complete your profile.\n\nThank you'
-  )
-  email_from = settings.EMAIL_HOST_USER
-  recipient_list = [email]
-   # Use the send_mail function from Django's email module
-  send_mail(subject, message, email_from, recipient_list)
-
-
-
+    subject = 'Welcome to Our Platform'
+    message = (
+        'Hello,\n\n'
+        'You have been added to our platform as an admin. '
+        'Please log in to complete your profile.\n\nThank you'
+    )
+    email_from = settings.EMAIL_HOST_USER
+    recipient_list = [email]
+    try:
+        send_mail(subject, message, email_from, recipient_list)
+        logger.info(f'Invite email sent to {email}')
+    except Exception as e:
+        logger.error(f'Error sending email: {e}')
 
 
 
@@ -79,7 +65,15 @@ def  send_email(email):
 
 
 
-
+#function to get all admins
+@api_view(['GET'])
+def list_admins(request):
+   #Retrieving all tenants
+   admins =  Admin.objects.all().order_by('admin_id')
+   #serializing the admins data
+   serializer = AdminSerializer(admins, many=True)
+   return Response(serializer.data, status=status.HTTP_200_OK)
+   
 
 
 
