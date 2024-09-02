@@ -5,7 +5,7 @@ urlpatterns = [
     # Admin endpoints
     path('create_admin/', views.create_admin, name='create_admin'),
     path('list_admins/', views.list_admins, name='list_admins'),
-    path('update_admins/<int:admin_id>/', views.update_admins, name='update_admins'),
+    path('update_admins/<int:admin_id>/', views.update_admin, name='update_admin'),
     path('delete_admin/<int:admin_id>/', views.delete_admin, name='delete_admin'),
 
     # Tenant endpoints
@@ -20,5 +20,8 @@ urlpatterns = [
     path('create_landlord/', views.create_landlord, name='create_landlord'),
     path('update_landlord/<int:landlord_id>/', views.update_landlord, name='update_landlord'),
     path('delete_landlord/<int:landlord_id>/', views.delete_landlord, name='delete_landlord'),
-    path('list_landlords/', views.list_landlord, name='list_landlord'),
+    path('list_landlords/', views.list_landlords, name='list_landlords'),
+
+
+    path('login/', views.login, name='login'),
 ]
