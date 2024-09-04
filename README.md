@@ -1,7 +1,5 @@
 # City Reality Backend
-
 ## Overview
-
 This is the backend api for City Reality App,  a house management App.
 
 ## Technologies Used
@@ -9,21 +7,15 @@ This is the backend api for City Reality App,  a house management App.
 1. [Python-Django](https://www.djangoproject.com/start/) 
 2. [PostgreSQL](https://www.postgresql.org/docs/): An open-source relational database system.
 
-
 ## Prerequisites
 
 1. Python Development Kit (Python 3.12.3) installed on your machine.
 2. 
-
 ## Setup Instructions
 
 1. Clone the Repository ` git clone https://github.com/JAPHETHNYARANGA/landlord_tenant.git`
    
-   
       1. Cd into the landlord_tenant directory and cd into `City  project so as to activate project virtual enviroment by running  ` source enviroment/bin/activate` and after it    run `pip install requirements.txt` to install python dependancies being used in the project from your  terminal
-
-       
-
          2.  Nagivating into the python-Django app 
         2. To Nagivate into the Django app created -  `cd into reality ` and check .env file where you will see database configuration variable and edit your DB_NAME,DB_USER,DB_PASSWORD according to your preference examples e.g 
             DB_NAME=city
