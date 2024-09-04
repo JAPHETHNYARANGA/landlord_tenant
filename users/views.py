@@ -1,26 +1,41 @@
-from rest_framework.decorators import api_view,permission_classes
+
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view, authentication_classes
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.contrib.auth import authenticate,login
 from .models import Admin, Tenant, Landlord, User
 from .serializers import AdminSerializer, LandlordSerializer, TenantSerializer, UserSerializer
 from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth.hashers import check_password
-from rest_framework.response import Response
-from django.contrib.auth import authenticate, login
-from rest_framework_simplejwt.tokens import RefreshToken
 from django.views.decorators.csrf import csrf_exempt
 import logging
+import  json
 
 logger = logging.getLogger(__name__)
 
+
+
+
 @csrf_exempt
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
 def login_view(request):
     email = request.data.get('email')
     password = request.data.get('password')
+    print("email",email)
+    print("password", password)
 
-    user = authenticate(request, username=email, password=password)
+    
+
+    logger.debug(f'Received login request with email: {email}')
+    
+
+
+    user = authenticate(request, eamil=email, password=password)
 
     if user is not None:
         refresh = RefreshToken.for_user(user)
@@ -29,8 +44,11 @@ def login_view(request):
             'access': str(refresh.access_token),
         }, status=status.HTTP_200_OK)
     else:
+        logger.warning(f'Invalid credentials for email: {email}')
         return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-    
+
+
+
 @api_view(['POST'])
 def create_admin(request):
     serializer = AdminSerializer(data=request.data)
@@ -39,7 +57,7 @@ def create_admin(request):
         if User.objects.filter(email=email, role='admin').exists():
             return Response({'message': 'Admin with this email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer.save(role='admin')  # Ensure role is set to 'admin'
+        serializer.save(role='admin',is_staff=True)  # Ensure role is set to 'admin'
         send_invite_email(email)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
