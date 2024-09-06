@@ -23,5 +23,6 @@ urlpatterns = [
     path('list_landlords/', views.list_landlords, name='list_landlords'),
 
 
-    path('login/', views.login, name='login'),
+    path('login/', views.login_view, name='login_view'),
+    # path("login/", views.LoginView.as_view(), name="login"),
 ]
