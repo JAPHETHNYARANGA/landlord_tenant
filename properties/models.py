@@ -21,5 +21,11 @@ class Property(models.Model):
     status = models.IntegerField(choices=STATUS_CHOICES)
     landlord_id = models.ForeignKey(Landlord, on_delete=models.CASCADE)  
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['name','rooms'], name='unique_property_name_rooms')
+
+        ]
+        #enforces that the combination of name and rooms must be unique
     def __str__(self):
         return f"{self.name} - {self.location}"
