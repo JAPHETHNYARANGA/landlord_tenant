@@ -37,5 +37,34 @@ def list_property(request):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+
+@api_view(['DELETE'])
+def delete_property(request,id):
+    try:
+        property = Property.objects.get(pk=id)
+        property.delete()
+        return Response({'message': 'Property deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
+    except Property.DoesNotExist:
+        return Response({'error': 'Property not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+
+
    
 
+@api_view(['PUT'])
+def update_property(request,id):
+    try:
+    #  Retrieving the property instance  by ID
+        property_instance = Property.objects.get(id=id)
+    except Property.DoesNotExist:
+        #initializing the serializer with existing instance and new data
+        return Response({'error':'Property not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    serializer = PropertySerializer(property_instance, data=request.data)
+
+    if serializer.is_valid():
+        #Saving the updated property
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
