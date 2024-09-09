@@ -1,6 +1,11 @@
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 from .models import User, Admin, Landlord, Tenant
+from rest_framework import serializers
+from django.contrib.auth import get_user_model
+
+
+User = get_user_model()
 
 # User Serializer
 class UserSerializer(serializers.ModelSerializer):
@@ -32,7 +37,18 @@ class AdminSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')
-        user = User.objects.create(**user_data)
+
+        # Check if 'password' is in the user_data and handle it
+        password = user_data.pop('password', None)
+        user = User(**user_data)
+        
+        # If password is provided, set it using set_password to ensure hashing
+        if password:
+            user.set_password(password)
+        
+        user.save()
+
+        # Create the admin instance linked to the user
         admin = Admin.objects.create(user=user, **validated_data)
         return admin
 
@@ -42,15 +58,25 @@ class LandlordSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Landlord
-        fields = ['user', 'government_id', 'nationality']
+        fields = ['user', 'government_id', 'dob', 'nationality']  # Ensure 'dob' is included here
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')
-        user = User.objects.create(**user_data)
+        role = user_data.get('role', 'LANDLORD').upper()
+        user_data['role'] = role
+
+        # Create the user
+        user = User(**user_data)
+        user.set_password(user_data['password'])
+        user.save()
+
+        # Create the landlord
         landlord = Landlord.objects.create(user=user, **validated_data)
         return landlord
 
-# Tenant Serializer
+
+
+
 class TenantSerializer(serializers.ModelSerializer):
     user = UserSerializer()
 
@@ -60,6 +86,48 @@ class TenantSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')
-        user = User.objects.create(**user_data)
-        tenant = Tenant.objects.create(user=user, **validated_data)
+
+        # Check if the user with the given email already exists
+        if User.objects.filter(email=user_data['email']).exists():
+            raise serializers.ValidationError({"email": "User with this email already exists."})
+
+        # Create the user and hash the password
+        user = User(**user_data)
+        user.set_password(user_data['password'])
+        user.save()
+
+        # Ensure that the tenant's data is correctly passed and linked
+        tenant_data = {
+            'government_id': validated_data.get('government_id'),
+            'nationality': validated_data.get('nationality'),
+            'house_number': validated_data.get('house_number'),
+            'user': user
+        }
+        tenant = Tenant.objects.create(**tenant_data)
         return tenant
+
+
+
+class AuthTokenSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        fields = ['email', 'password']
+
+    def validate(self, data):
+        email = data.get('email')
+        password = data.get('password')
+
+        if email and password:
+            try:
+                user = User.objects.get(email=email)
+                if not user.check_password(password):
+                    raise serializers.ValidationError("Incorrect password.")
+            except User.DoesNotExist:
+                raise serializers.ValidationError("User with this email does not exist.")
+        else:
+            raise serializers.ValidationError("Both email and password are required.")
+
+        data['user'] = user
+        return data
