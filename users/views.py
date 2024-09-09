@@ -1,6 +1,8 @@
-from rest_framework.decorators import api_view, authentication_classes
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate
 from django.core.mail import send_mail
 from django.conf import settings
@@ -10,14 +12,12 @@ from rest_framework.exceptions import AuthenticationFailed
 from .models import Admin, Tenant, Landlord, User
 from .serializers import AdminSerializer, LandlordSerializer, TenantSerializer, UserSerializer, AuthTokenSerializer
 from rest_framework.authtoken.models import Token
-from rest_framework.authtoken.views import ObtainAuthToken
 import logging
 
 # Get the custom user model
 User = get_user_model()
 
 logger = logging.getLogger(__name__)
-
 
 @api_view(['POST'])
 def login_view(request):
@@ -58,6 +58,8 @@ def login_view(request):
 
 # Admin Views
 @api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def create_admin(request):
     serializer = AdminSerializer(data=request.data)
     
@@ -83,6 +85,8 @@ def create_admin(request):
 
 
 @api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def list_admins(request):
     admins = User.objects.filter(role='ADMIN').order_by('id')
     serializer = UserSerializer(admins, many=True)
@@ -90,6 +94,8 @@ def list_admins(request):
 
 
 @api_view(['PUT'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def update_admin(request, admin_id):
     try:
         admin = User.objects.get(pk=admin_id, role='ADMIN')
@@ -110,6 +116,8 @@ def update_admin(request, admin_id):
 
 
 @api_view(['DELETE'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_admin(request, admin_id):
     try:
         admin = User.objects.get(pk=admin_id, role='ADMIN')
@@ -121,6 +129,8 @@ def delete_admin(request, admin_id):
 
 # Tenant Views
 @api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def create_tenant(request):
     serializer = TenantSerializer(data=request.data)
 
@@ -149,9 +159,9 @@ def create_tenant(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-
 @api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def list_tenants(request):
     tenants = Tenant.objects.all().order_by('user__id')
     serializer = TenantSerializer(tenants, many=True)
@@ -159,6 +169,8 @@ def list_tenants(request):
 
 
 @api_view(['PUT'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def update_tenant(request, tenant_id):
     try:
         tenant = Tenant.objects.get(pk=tenant_id)
@@ -181,6 +193,8 @@ def update_tenant(request, tenant_id):
 
 
 @api_view(['DELETE'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_tenant(request, tenant_id):
     try:
         tenant = Tenant.objects.get(pk=tenant_id)
@@ -192,6 +206,8 @@ def delete_tenant(request, tenant_id):
 
 # Landlord Views
 @api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def create_landlord(request):
     serializer = LandlordSerializer(data=request.data)
     if serializer.is_valid():
@@ -214,9 +230,9 @@ def create_landlord(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-
 @api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def list_landlords(request):
     landlords = Landlord.objects.all().order_by('user__id')
     serializer = LandlordSerializer(landlords, many=True)
@@ -224,6 +240,8 @@ def list_landlords(request):
 
 
 @api_view(['PUT'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def update_landlord(request, landlord_id):
     try:
         landlord = Landlord.objects.get(pk=landlord_id)
@@ -246,6 +264,8 @@ def update_landlord(request, landlord_id):
 
 
 @api_view(['DELETE'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_landlord(request, landlord_id):
     try:
         landlord = Landlord.objects.get(pk=landlord_id)
@@ -282,4 +302,11 @@ def send_tenant_email(email):
 
 def send_landlord_email(email):
     subject = 'Landlord Registration Successful'
-    message = 'Hello,\n\nYou have been successfully registered as a landlord.\n\nThank you'
+    message = 'Hello,\n\nYou have been successfully registered as a landlord.\n\nThank you!'
+    email_from = settings.EMAIL_HOST_USER
+    recipient_list = [email]
+    try:
+        send_mail(subject, message, email_from, recipient_list)
+        logger.info(f'Landlord registration email sent to {email}')
+    except Exception as e:
+        logger.error(f'Error sending email: {e}')
