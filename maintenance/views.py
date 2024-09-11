@@ -68,4 +68,10 @@ def update_ticket(request, ticket_id):
 
 
 @api_view(['DELETE'])
-def delete_ticket(request)
+def delete_ticket(request,ticket_id):
+    try:
+        ticket = MaintenanceTicket.objects.get(pk=ticket_id)
+        ticket.delete()
+        return Response({'message': 'Ticket deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
+    except MaintenanceTicket.DoesNotExist:
+        return Response({'error': 'Ticket not found.'}, status=status.HTTP_404_NOT_FOUND)
