@@ -129,8 +129,8 @@ def delete_admin(request, admin_id):
 
 # Tenant Views
 @api_view(['POST'])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
+# @authentication_classes([TokenAuthentication])
+# @permission_classes([IsAuthenticated])
 def create_tenant(request):
     serializer = TenantSerializer(data=request.data)
 
@@ -160,8 +160,8 @@ def create_tenant(request):
 
 
 @api_view(['GET'])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
+# @authentication_classes([TokenAuthentication])
+# @permission_classes([IsAuthenticated])
 def list_tenants(request):
     tenants = Tenant.objects.all().order_by('user__id')
     serializer = TenantSerializer(tenants, many=True)
