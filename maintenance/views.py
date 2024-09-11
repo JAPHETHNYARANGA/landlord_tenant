@@ -1,4 +1,3 @@
-from rest_framework import status
 from .models import MaintenanceTicket
 from .serializers import MaintenanceTicketSerializer
 from rest_framework.decorators import api_view
@@ -29,7 +28,7 @@ def create_maintenance_ticket(request):
                             status=status.HTTP_400_BAD_REQUEST)
         
         # Saving the new MaintenanceTicket if no duplicates are found
-        serializer.save()  # You missed this part: Save the valid data to the DB
+        serializer.save()  # : Save the valid data to the DB
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
     # If the data is not valid, return errors
@@ -50,7 +49,7 @@ def update_ticket(request, ticket_id):
         # If the ticket does not exist, return an error
         return Response({"error": "Ticket not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    # Determine if the request is partial (PATCH) or full (PUT)
+    # Determining if the request is partial (PATCH) or full (PUT)
     partial = request.method == "PATCH"
 
     # Pass the existing ticket and new data to the serializer

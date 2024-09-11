@@ -1,5 +1,5 @@
 
-from django.db import models  # Correct
+from django.db import models  
 from properties.models import Property
 from users.models import Tenant
 
@@ -13,7 +13,7 @@ class Booking(models.Model):
         ('Confirmed','Confirmed'),
         ('Cancelled','Cancelled'),
         
-        ('Completed', 'Complted'),
+        ('Completed', 'Completed'),
     ]
 
 
