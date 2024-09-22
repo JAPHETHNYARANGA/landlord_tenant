@@ -61,6 +61,8 @@ def login_view(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def create_admin(request):
+    print(request.auth)
+    print(request.user)
     serializer = AdminSerializer(data=request.data)
     
     if serializer.is_valid():
@@ -310,3 +312,11 @@ def send_landlord_email(email):
         logger.info(f'Landlord registration email sent to {email}')
     except Exception as e:
         logger.error(f'Error sending email: {e}')
+
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def test_auth(request):
+    return Response({"message": f"Authenticated as {request.user.email}"})

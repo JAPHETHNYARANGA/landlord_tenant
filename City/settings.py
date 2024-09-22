@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'payments',
     'properties',
     'users',
-     'rest_framework',
+    'rest_framework',
     'rest_framework.authtoken'
 ]
 
@@ -101,6 +101,7 @@ DATABASES = {
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ],
 }
 
