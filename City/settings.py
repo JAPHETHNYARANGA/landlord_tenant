@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'payments',
     'properties',
     'users',
-     'rest_framework',
+    'rest_framework',
     'rest_framework.authtoken'
 ]
 
