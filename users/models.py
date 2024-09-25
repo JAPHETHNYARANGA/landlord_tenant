@@ -1,8 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
-from django.contrib.auth.models import Group
-from rest_framework.authtoken.models import Token
-
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -25,34 +22,35 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault('is_active', True)  # Ensure superuser is active
         extra_fields.setdefault('role', 'ADMIN')  # Assign the admin role
         
-        # Calling create_user which hashes the password
         return self.create_user(email=email, password=password, **extra_fields)
 
-        def create_admin(self, email, password=None, **extra_fields):
-            extra_fields.setdefault('is_superuser', True)  # Ensure superuser is True for admin
-            extra_fields.setdefault('is_staff', True)
-            extra_fields.setdefault('is_active', True)
-            
-            # Set the role to ADMIN if not already set
-            extra_fields['role'] = "ADMIN"
+    def create_admin(self, email, password=None, **extra_fields):
+        """Create an admin user."""
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_active', True)  # Ensure admin is active
         
-        # Calling create_user which hashes the password
+        # Set the role to 'ADMIN'
+        extra_fields['role'] = "ADMIN"
+        
         return self.create_user(email=email, password=password, **extra_fields)
-
 
     def create_landlord(self, email, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_active', True)
+        """Create a landlord user."""
+        extra_fields.setdefault('is_staff', True)  # Set is_staff to True for landlords
+        extra_fields.setdefault('is_active', False)  # Ensure landlord is active
         extra_fields.setdefault('role', 'LANDLORD')  # Automatically assign the 'LANDLORD' role
         
-        # Calling create_user which hashes the password
+        # Create the user
         return self.create_user(email=email, password=password, **extra_fields)
 
     def create_tenant(self, email, password=None, **extra_fields):
-        extra_fields.setdefault('is_active', True)
+        """Create a tenant user."""
+        extra_fields.setdefault('is_staff', False)  # Set is_staff to True for tenants
+        extra_fields.setdefault('is_active', True)  # Ensure tenant is active
         extra_fields.setdefault('role', 'TENANT')  # Automatically assign the 'TENANT' role
         
-        # Calling create_user which hashes the password
+        # Create the user
         return self.create_user(email=email, password=password, **extra_fields)
 
 
@@ -82,7 +80,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.first_name} {self.surname}"
-
 
 
 class Admin(models.Model):

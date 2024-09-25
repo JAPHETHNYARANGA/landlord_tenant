@@ -40,6 +40,7 @@ class AdminSerializer(serializers.ModelSerializer):
 
         # Check if 'password' is in the user_data and handle it
         password = user_data.pop('password', None)
+        user_data['is_superuser'] = True
         user = User(**user_data)
         
         # If password is provided, set it using set_password to ensure hashing
@@ -66,6 +67,7 @@ class LandlordSerializer(serializers.ModelSerializer):
         user_data['role'] = role
 
         # Create the user
+        user_data['is_staff'] = True  # Ensure the tenant's user is active
         user = User(**user_data)
         user.set_password(user_data['password'])
         user.save()
@@ -91,9 +93,10 @@ class TenantSerializer(serializers.ModelSerializer):
         if User.objects.filter(email=user_data['email']).exists():
             raise serializers.ValidationError({"email": "User with this email already exists."})
 
-        # Create the user and hash the password
+        # Create the user and set is_active to True
+        user_data['is_active'] = True  # Ensure the tenant's user is active
         user = User(**user_data)
-        user.set_password(user_data['password'])
+        user.set_password(user_data['password'])  # Hash the password
         user.save()
 
         # Ensure that the tenant's data is correctly passed and linked
@@ -105,7 +108,6 @@ class TenantSerializer(serializers.ModelSerializer):
         }
         tenant = Tenant.objects.create(**tenant_data)
         return tenant
-
 
 
 class AuthTokenSerializer(serializers.Serializer):

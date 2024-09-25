@@ -1,4 +1,6 @@
-from rest_framework.decorators import api_view, authentication_classes
+from rest_framework.decorators import api_view,permission_classes
+from rest_framework.permissions import IsAuthenticated,AllowAny
+from .permissions import IsAdmin,IsLandlord,IsTenant
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import authenticate
@@ -20,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def login_view(request):
     """
     API endpoint to obtain a token for a user.
@@ -58,6 +61,8 @@ def login_view(request):
 
 # Admin Views
 @api_view(['POST'])
+# @permission_classes([IsAuthenticated, IsAdmin])
+@permission_classes([AllowAny])
 def create_admin(request):
     serializer = AdminSerializer(data=request.data)
     
@@ -83,6 +88,7 @@ def create_admin(request):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdmin])
 def list_admins(request):
     admins = User.objects.filter(role='ADMIN').order_by('id')
     serializer = UserSerializer(admins, many=True)
@@ -90,6 +96,7 @@ def list_admins(request):
 
 
 @api_view(['PUT'])
+@permission_classes([IsAuthenticated, IsAdmin])
 def update_admin(request, admin_id):
     try:
         admin = User.objects.get(pk=admin_id, role='ADMIN')
@@ -110,6 +117,7 @@ def update_admin(request, admin_id):
 
 
 @api_view(['DELETE'])
+@permission_classes([IsAuthenticated, IsAdmin])
 def delete_admin(request, admin_id):
     try:
         admin = User.objects.get(pk=admin_id, role='ADMIN')
@@ -121,7 +129,13 @@ def delete_admin(request, admin_id):
 
 # Tenant Views
 @api_view(['POST'])
+# @permission_classes([IsAuthenticated, IsTenant])
+@permission_classes([AllowAny])
 def create_tenant(request):
+    
+    #checking if the token is being validated
+    print(f"User:{request.user}")
+    print(f"Token:{request.auth}")
     serializer = TenantSerializer(data=request.data)
 
     if serializer.is_valid():
@@ -152,6 +166,7 @@ def create_tenant(request):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def list_tenants(request):
     tenants = Tenant.objects.all().order_by('user__id')
     serializer = TenantSerializer(tenants, many=True)
@@ -159,6 +174,7 @@ def list_tenants(request):
 
 
 @api_view(['PUT'])
+@permission_classes([IsAuthenticated, IsTenant])
 def update_tenant(request, tenant_id):
     try:
         tenant = Tenant.objects.get(pk=tenant_id)
@@ -181,6 +197,7 @@ def update_tenant(request, tenant_id):
 
 
 @api_view(['DELETE'])
+@permission_classes([IsAuthenticated, IsTenant])
 def delete_tenant(request, tenant_id):
     try:
         tenant = Tenant.objects.get(pk=tenant_id)
@@ -192,6 +209,8 @@ def delete_tenant(request, tenant_id):
 
 # Landlord Views
 @api_view(['POST'])
+# @permission_classes([IsAuthenticated, IsLandlord])
+@permission_classes([AllowAny])
 def create_landlord(request):
     serializer = LandlordSerializer(data=request.data)
     if serializer.is_valid():
@@ -217,6 +236,7 @@ def create_landlord(request):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated, IsLandlord])
 def list_landlords(request):
     landlords = Landlord.objects.all().order_by('user__id')
     serializer = LandlordSerializer(landlords, many=True)
@@ -224,6 +244,7 @@ def list_landlords(request):
 
 
 @api_view(['PUT'])
+@permission_classes([IsAuthenticated, IsLandlord])
 def update_landlord(request, landlord_id):
     try:
         landlord = Landlord.objects.get(pk=landlord_id)
@@ -246,6 +267,7 @@ def update_landlord(request, landlord_id):
 
 
 @api_view(['DELETE'])
+@permission_classes([IsAuthenticated, IsLandlord])
 def delete_landlord(request, landlord_id):
     try:
         landlord = Landlord.objects.get(pk=landlord_id)
