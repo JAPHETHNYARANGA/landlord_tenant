@@ -38,7 +38,7 @@ class UserManager(BaseUserManager):
     def create_landlord(self, email, password=None, **extra_fields):
         """Create a landlord user."""
         extra_fields.setdefault('is_staff', True)  # Set is_staff to True for landlords
-        extra_fields.setdefault('is_active', False)  # Ensure landlord is active
+        extra_fields.setdefault('is_active', True)  # Ensure landlord is active (changed to True)
         extra_fields.setdefault('role', 'LANDLORD')  # Automatically assign the 'LANDLORD' role
         
         # Create the user
@@ -46,7 +46,7 @@ class UserManager(BaseUserManager):
 
     def create_tenant(self, email, password=None, **extra_fields):
         """Create a tenant user."""
-        extra_fields.setdefault('is_staff', False)  # Set is_staff to True for tenants
+        extra_fields.setdefault('is_staff', False)  # Set is_staff to False for tenants
         extra_fields.setdefault('is_active', True)  # Ensure tenant is active
         extra_fields.setdefault('role', 'TENANT')  # Automatically assign the 'TENANT' role
         
@@ -116,3 +116,5 @@ class Tenant(models.Model):
 
     def __str__(self):
         return f"{self.user.first_name} {self.user.surname}"
+
+

@@ -1,3 +1,4 @@
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from .permissions import IsAdmin,IsLandlord,IsTenant
@@ -10,9 +11,9 @@ from django.contrib.auth import get_user_model
 from django.db.utils import IntegrityError
 from rest_framework.exceptions import AuthenticationFailed
 from .models import Admin, Tenant, Landlord, User
-from .serializers import AdminSerializer, LandlordSerializer, TenantSerializer, UserSerializer, AuthTokenSerializer
+from .serializers import AdminSerializer, LandlordSerializer,TenantSerializer, UserSerializer, AuthTokenSerializer
 from rest_framework.authtoken.models import Token
-from rest_framework.authtoken.views import ObtainAuthToken
+# from rest_framework.authtoken.views import ObtainAuthToken
 import logging
 
 # Get the custom user model
@@ -40,11 +41,14 @@ def login_view(request):
                     raise AuthenticationFailed('Wrong Credentials')
                 
                 # Create or get the token
-                token, created = Token.objects.get_or_create(user=user)
+                token = RefreshToken.for_user(user)
                 
                 # Prepare the response
                 response_data = {
-                    'data': token.key,
+                    'data':{
+                        "access":str(token.access_token),
+                        "refresh":str(token),
+                    },
                     'isSuccessful': True,
                     'user': {
                         'email': user.email,
@@ -57,13 +61,15 @@ def login_view(request):
     except AuthenticationFailed as e:
         return Response({'isSuccessful': False, 'data': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
     except Exception as e:
+      
         return Response({'isSuccessful': False, 'data': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
 
-# Admin Views
+
 @api_view(['POST'])
-# @permission_classes([IsAuthenticated, IsAdmin])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated, IsAdmin])
 def create_admin(request):
+    print(f"Request user: {request.user}")  # Debugging line
     serializer = AdminSerializer(data=request.data)
     
     if serializer.is_valid():
@@ -85,7 +91,6 @@ def create_admin(request):
             return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdmin])
@@ -129,8 +134,6 @@ def delete_admin(request, admin_id):
 
 # Tenant Views
 @api_view(['POST'])
-# @permission_classes([IsAuthenticated, IsTenant])
-@permission_classes([AllowAny])
 def create_tenant(request):
     
     #checking if the token is being validated
@@ -174,7 +177,6 @@ def list_tenants(request):
 
 
 @api_view(['PUT'])
-@permission_classes([IsAuthenticated, IsTenant])
 def update_tenant(request, tenant_id):
     try:
         tenant = Tenant.objects.get(pk=tenant_id)
@@ -197,7 +199,6 @@ def update_tenant(request, tenant_id):
 
 
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated, IsTenant])
 def delete_tenant(request, tenant_id):
     try:
         tenant = Tenant.objects.get(pk=tenant_id)
@@ -305,3 +306,41 @@ def send_tenant_email(email):
 def send_landlord_email(email):
     subject = 'Landlord Registration Successful'
     message = 'Hello,\n\nYou have been successfully registered as a landlord.\n\nThank you'
+
+
+
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def logout(request):
+
+    "API endpoint to logout a user and  blacklist their refresh token"
+
+    try:
+        #getting the token from the request
+        token = request.data.get('refresh')
+
+        if token is None:
+            return Response({'isSuccessful': False, 'data': 'Refresh token is required.'},status=status.HTTP_400_BAD_REQUEST)
+        
+        #blacklist  the refresh token
+        token_obj  = RefreshToken(token)
+        token_obj.blacklist()
+
+        return Response({'isSuccessful':True, 'data':'Successfully logged out.'}, status=status.HTTP_205_RESET_CONTENT)
+        
+    except Exception as e:
+        return Response({'isSuccessful': False, 'data': str(e)},status=status.HTTP_400_BAD_REQUEST)
+        
+
+
+# @api_view(['POST'])
+# # @permission_classes([IsAuthenticated])
+# @permission_classes([AllowAny])
+# def logout(request):
+#     serializer = LogoutSerializer(data=request.data)
+#     if serializer.is_valid(raise_exception=True):
+#         serializer.save()
+#         return Response(status=status.HTTP_204_NO_CONTENT)
+#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)        
