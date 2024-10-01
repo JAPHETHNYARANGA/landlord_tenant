@@ -1,5 +1,9 @@
 from django.urls import path
 from . import views  
+from rest_framework_simplejwt.views import (
+    TokenRefreshView,
+
+)
 
 urlpatterns = [
     # Admin endpoints
@@ -23,5 +27,9 @@ urlpatterns = [
     path('list_landlords/', views.list_landlords, name='list_landlords'),
 
 
-    path('login/', views.login, name='login'),
+    path('login/', views.login_view, name='login_view'),
+    path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('login/refresh/',TokenRefreshView.as_view(),name='token_refresh'),
+    # path("login/", views.LoginView.as_view(), name="login"),
+     path('logout/', views.logout, name='logout'),
 ]
