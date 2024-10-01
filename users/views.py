@@ -335,12 +335,4 @@ def logout(request):
         
 
 
-# @api_view(['POST'])
-# # @permission_classes([IsAuthenticated])
-# @permission_classes([AllowAny])
-# def logout(request):
-#     serializer = LogoutSerializer(data=request.data)
-#     if serializer.is_valid(raise_exception=True):
-#         serializer.save()
-#         return Response(status=status.HTTP_204_NO_CONTENT)
-#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)        
+        

@@ -16,7 +16,6 @@ media
 
 # Environment variables:
 .env
-
 # Django migrations
 **/migrations/
 

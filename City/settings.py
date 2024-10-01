@@ -5,23 +5,20 @@ import os
 from datetime import timedelta
 #Decouple helps you to organize your settings so that you can change parameters without having to redeploy your app
 from django.conf import settings
-from dotenv import load_dotenv
-from datetime import timedelta
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-9a00_dz*u-o88uby(34)l0%)3q3bgn!t%tq%$zogsj=(n3i8pn'
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = []
+
 
 
 # Application definition
@@ -91,22 +88,20 @@ WSGI_APPLICATION = 'City.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+port_value = config('DB_PORT', default='3306').strip()
+print(f"DB_PORT: '{port_value}'")  # Add this print statement
+
 DATABASES = {
     'default': {
-        'ENGINE': config('DB_ENGINE'),
+        'ENGINE': 'django.db.backends.mysql',
         'NAME': config('DB_NAME'),
         'USER': config('DB_USER'),
         'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST'),
-        'PORT': config('DB_PORT'),
+        'HOST': config('DB_HOST', default='localhost'),
+        'PORT': int(port_value),  
     }
 }
-
-
-
-
-
-
+SECRET_KEY = config('SECRET_KEY')
 
 
 REST_FRAMEWORK = {
@@ -115,6 +110,13 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
+
+
+DEBUG = True  # Change to False in production
+
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']  # Add your production domains here when deploying
+
+# Your other settings...
 
 
 

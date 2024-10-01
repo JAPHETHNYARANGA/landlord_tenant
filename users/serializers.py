@@ -35,32 +35,6 @@ class UserSerializer(serializers.ModelSerializer):
         return super(UserSerializer, self).update(instance, validated_data)
 
 
-# # Admin Serializer
-# class AdminSerializer(serializers.ModelSerializer):
-#     user = UserSerializer()
-
-#     class Meta:
-#         model = Admin
-#         fields = ['user']
-
-#     def create(self, validated_data):
-#         user_data = validated_data.pop('user')
-
-#         # Check if 'password' is in the user_data and handle it
-#         password = user_data.pop('password', None)
-#         user_data['is_superuser'] = True
-#         user = User(**user_data)
-        
-#         # If password is provided, set it using set_password to ensure hashing
-#         if password:
-#             user.set_password(password)
-        
-#         user.save()
-
-#         # Create the admin instance linked to the user
-#         admin = Admin.objects.create(user=user, **validated_data)
-#         return admin
-
 class AdminSerializer(serializers.ModelSerializer):
     user = UserSerializer()
 
@@ -115,39 +89,6 @@ class LandlordSerializer(serializers.ModelSerializer):
 
         landlord = Landlord.objects.create(user=user, **validated_data)
         return landlord
-
-
-
-# class TenantSerializer(serializers.ModelSerializer):
-#     user = UserSerializer()
-
-#     class Meta:
-#         model = Tenant
-#         fields = ['user', 'government_id', 'nationality', 'house_number']
-
-#     def create(self, validated_data):
-#         user_data = validated_data.pop('user')
-
-#         # Check if the user with the given email already exists
-#         if User.objects.filter(email=user_data['email']).exists():
-#             raise serializers.ValidationError({"email": "User with this email already exists."})
-
-#         # Create the user and set is_active to True
-#         user_data['is_active'] = True  # Ensure the tenant's user is active
-#         user = User(**user_data)
-#         user.set_password(user_data['password'])  # Hash the password
-#         user.save()
-
-#         # Ensure that the tenant's data is correctly passed and linked
-#         tenant_data = {
-#             'government_id': validated_data.get('government_id'),
-#             'nationality': validated_data.get('nationality'),
-#             'house_number': validated_data.get('house_number'),
-#             'user': user
-#         }
-#         tenant = Tenant.objects.create(**tenant_data)
-#         return tenant
-
 
 class TenantSerializer(serializers.ModelSerializer):
     user = UserSerializer()
@@ -205,14 +146,4 @@ class AuthTokenSerializer(serializers.Serializer):
 
 
 
-
-# class LogoutSerializer(serializers.Serializer):
-#     refresh = serializers.CharField()
-#     def validate(self, attrs):
-#         self.token = attrs['refresh']
-#         return attrs
-#     def save(self, **kwargs):
-#         try:
-#             RefreshToken(self.token).blacklist()
-#         except TokenError:
-#             self.fail('bad_token')        
+        
