@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views  
+from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
     # Admin endpoints
@@ -23,5 +24,9 @@ urlpatterns = [
     path('list_landlords/', views.list_landlords, name='list_landlords'),
 
 
-    path('login/', views.login, name='login'),
+    path('login/', views.login_view, name='login_view'),
+    # path("login/", views.LoginView.as_view(), name="login"),
+
+    #testing authentication
+    path('api-token-auth/', obtain_auth_token, name='api_token_auth')
 ]
