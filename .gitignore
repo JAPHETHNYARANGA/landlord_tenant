@@ -31,3 +31,4 @@ media
 # Virtual Environment
 enviroment/
 *.enviroment
+__pycache__/
